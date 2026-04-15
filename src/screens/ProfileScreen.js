@@ -13,27 +13,36 @@ export default function ProfileScreen() {
   const [limit, setLimit]   = useState('');
 
   const updateSalary = async () => {
+    if (!salary) { Alert.alert('Error', 'Enter salary amount'); return; }
     try {
-      await api.post('/api/auth/login',
-        { email: user.email, monthly_salary: parseFloat(salary) });
-      Alert.alert('Success', 'Salary updated!');
-    } catch {
+      const res = await api.post('/api/salary/update', {
+        salary: parseFloat(salary)
+      });
+      if (res.data.success) Alert.alert('Success', 'Salary updated!');
+      else Alert.alert('Error', res.data.error);
+    } catch (e) {
       Alert.alert('Error', 'Could not update salary.');
     }
   };
 
   const addBudget = async () => {
     if (!category || !limit) {
-      Alert.alert('Error', 'Fill in category and amount');
+      Alert.alert('Error', 'Fill in both category and limit amount');
       return;
     }
     try {
-      const res = await api.post('/api/add-expense', {
-        amount: 0, category, description: '__budget__',
+      const res = await api.post('/api/budgets/add', {
+        category:     category.trim(),
+        limit_amount: parseFloat(limit),
       });
-      Alert.alert('Success', `Budget for ${category} set!`);
-      setCat(''); setLimit('');
-    } catch {
+      if (res.data.success) {
+        Alert.alert('Success', `Budget for ${category} added!`);
+        setCat('');
+        setLimit('');
+      } else {
+        Alert.alert('Error', res.data.error);
+      }
+    } catch (e) {
       Alert.alert('Error', 'Could not add budget.');
     }
   };
@@ -43,9 +52,11 @@ export default function ProfileScreen() {
 
       {/* Profile Card */}
       <View style={styles.card}>
-        <Text style={styles.avatar}>
-          {user?.username?.[0]?.toUpperCase() || '?'}
-        </Text>
+        <View style={styles.avatarCircle}>
+          <Text style={styles.avatarText}>
+            {user?.username?.[0]?.toUpperCase() || '?'}
+          </Text>
+        </View>
         <Text style={styles.name}>{user?.username}</Text>
         <Text style={styles.email}>{user?.email}</Text>
       </View>
@@ -73,7 +84,7 @@ export default function ProfileScreen() {
           style={styles.input}
           value={category}
           onChangeText={setCat}
-          placeholder="Category (e.g. Food)"
+          placeholder="Category (e.g. Food, Transport)"
           placeholderTextColor="#94a3b8"
         />
         <TextInput
@@ -81,7 +92,7 @@ export default function ProfileScreen() {
           value={limit}
           onChangeText={setLimit}
           keyboardType="numeric"
-          placeholder="Limit Amount"
+          placeholder="Limit Amount (Rs.)"
           placeholderTextColor="#94a3b8"
         />
         <TouchableOpacity style={styles.btn} onPress={addBudget}>
@@ -99,23 +110,24 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container:    { flex:1, backgroundColor:'#f1f5f9' },
-  card:         { backgroundColor:'#2563eb', alignItems:'center', padding:32 },
-  avatar:       { width:72, height:72, borderRadius:36, backgroundColor:'#1d4ed8',
-                  textAlign:'center', lineHeight:72, fontSize:32,
-                  color:'#fff', fontWeight:'800', overflow:'hidden' },
-  name:         { fontSize:22, fontWeight:'800', color:'#fff', marginTop:12 },
-  email:        { fontSize:14, color:'#bfdbfe', marginTop:4 },
-  section:      { backgroundColor:'#fff', margin:16, borderRadius:14,
-                  padding:16, elevation:2 },
-  sectionTitle: { fontSize:15, fontWeight:'700', color:'#0f172a', marginBottom:12 },
-  input:        { backgroundColor:'#f8fafc', borderRadius:10, padding:12,
-                  fontSize:14, marginBottom:10, borderWidth:1,
-                  borderColor:'#e2e8f0', color:'#0f172a' },
-  btn:          { backgroundColor:'#2563eb', borderRadius:10, padding:14,
-                  alignItems:'center' },
-  btnText:      { color:'#fff', fontWeight:'700', fontSize:15 },
-  logoutBtn:    { margin:16, backgroundColor:'#fee2e2', borderRadius:14,
-                  padding:16, alignItems:'center' },
-  logoutText:   { color:'#dc2626', fontWeight:'700', fontSize:15 },
+  container:    { flex: 1, backgroundColor: '#f1f5f9' },
+  card:         { backgroundColor: '#2563eb', alignItems: 'center', padding: 36 },
+  avatarCircle: { width: 72, height: 72, borderRadius: 36,
+                  backgroundColor: '#1d4ed8', alignItems: 'center',
+                  justifyContent: 'center' },
+  avatarText:   { fontSize: 32, color: '#fff', fontWeight: '800' },
+  name:         { fontSize: 22, fontWeight: '800', color: '#fff', marginTop: 12 },
+  email:        { fontSize: 14, color: '#bfdbfe', marginTop: 4 },
+  section:      { backgroundColor: '#fff', margin: 16, borderRadius: 14,
+                  padding: 16, elevation: 2 },
+  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#0f172a', marginBottom: 12 },
+  input:        { backgroundColor: '#f8fafc', borderRadius: 10, padding: 12,
+                  fontSize: 14, marginBottom: 10, borderWidth: 1,
+                  borderColor: '#e2e8f0', color: '#0f172a' },
+  btn:          { backgroundColor: '#2563eb', borderRadius: 10,
+                  padding: 14, alignItems: 'center' },
+  btnText:      { color: '#fff', fontWeight: '700', fontSize: 15 },
+  logoutBtn:    { margin: 16, backgroundColor: '#fee2e2', borderRadius: 14,
+                  padding: 16, alignItems: 'center', marginBottom: 40 },
+  logoutText:   { color: '#dc2626', fontWeight: '700', fontSize: 15 },
 });
