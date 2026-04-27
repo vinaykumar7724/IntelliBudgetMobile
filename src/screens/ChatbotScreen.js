@@ -49,10 +49,7 @@ export default function ChatbotScreen() {
   const flatRef  = useRef();
   const inputRef = useRef();
   const pulse    = useRef(new Animated.Value(1)).current;
-
-  let SpeechRecognition = null;
-  try { SpeechRecognition = require('expo-speech-recognition'); } catch (_) {}
-
+  const SpeechRecognition = null;
   // Pulse animation for voice indicator
   useEffect(() => {
     if (voiceMode === 'listening') {
